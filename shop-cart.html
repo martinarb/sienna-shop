@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sienna | Carrito</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cookie&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
+    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css">
+    <link rel="stylesheet" href="css/elegant-icons.css" type="text/css">
+    <link rel="stylesheet" href="css/style.css" type="text/css">
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-xl-3 col-lg-2">
+                    <div class="header__logo">
+                        <a href="./index.html"><img src="img/logo.jpg" alt="" style="width: 120px;"></a>
+                    </div>
+                </div>
+                <div class="col-xl-6 col-lg-7">
+                    <nav class="header__menu">
+                        <ul>
+                            <li><a href="./index.html">Inicio</a></li>
+                            <li><a href="./index.html#mis-productos">Productos</a></li>
+                            <li class="active"><a href="#">Carrito</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="breadcrumb-option">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="breadcrumb__links">
+                        <a href="./index.html"><i class="fa fa-home"></i> Volver al Inicio</a>
+                        <span>Tu Carrito de Compras</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="shop-cart spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="shop__cart__table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Precio</th>
+                                    <th></th> </tr>
+                            </thead>
+                            <tbody id="lista-carrito">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-6">
+                    <div class="cart__btn">
+                        <a href="./index.html#mis-productos" class="site-btn">Seguir comprando</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 offset-lg-2">
+                    <div class="cart__total__procced">
+                        <h6>Total del Pedido</h6>
+                        <ul>
+                            <li>Total <span id="precio-final">$ 0</span></li>
+                        </ul>
+                        <a href="#" id="btn-whatsapp" target="_blank" class="primary-btn" style="background-color: #25D366; border-color: #25D366;">
+                            <i class="fa fa-whatsapp"></i> FINALIZAR COMPRA
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="footer__copyright__text">
+                        <p>Copyright &copy; Sienna Shop</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/main.js"></script>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        // ¡PON TU NÚMERO AQUÍ! (Sin el +)
+        const MI_TELEFONO = "5493517451818"; 
+
+        function cargarCarrito() {
+            // Leemos la memoria 'miCarritoSienna'
+            let carrito = JSON.parse(localStorage.getItem('miCarritoSienna')) || [];
+            
+            let tabla = document.getElementById('lista-carrito');
+            let precioFinal = document.getElementById('precio-final');
+            let botonWsp = document.getElementById('btn-whatsapp');
+            
+            let total = 0;
+            let mensajeWsp = "Hola!  Quiero confirmar el siguiente pedido:%0A%0A";
+
+            // Limpiamos la tabla visualmente
+            tabla.innerHTML = '';
+
+            // SI ESTÁ VACÍO
+            if (carrito.length === 0) {
+                tabla.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 20px;">Tu carrito está vacío </td></tr>';
+                precioFinal.innerText = "$ 0";
+                // Ocultamos el botón de whatsapp si no hay nada
+                botonWsp.style.display = 'none'; 
+                return;
+            } else {
+                botonWsp.style.display = 'block';
+            }
+
+            // SI HAY PRODUCTOS, LOS DIBUJAMOS
+            carrito.forEach((producto, indice) => {
+                let fila = document.createElement('tr');
+                
+                fila.innerHTML = `
+                    <td class="cart__product__item">
+                        <div class="cart__product__item__title">
+                            <h6>${producto.nombre}</h6>
+                        </div>
+                    </td>
+                    <td class="cart__price">$${producto.precio}</td>
+                    <td class="cart__close"><span class="icon_close" style="cursor:pointer; color:red;" onclick="eliminarDelCarrito(${indice})"></span></td>
+                `;
+                
+                tabla.appendChild(fila);
+
+                // Sumamos (asegurando que sea número)
+                // Quitamos puntos si el precio viene como "17.200" para sumar bien, luego formateamos
+                let precioLimpio = parseInt(producto.precio.toString().replace('.', '')); 
+                total += precioLimpio;
+
+                mensajeWsp += `▪ ${producto.nombre}: $${producto.precio}%0A`;
+            });
+
+            // Mostramos el total
+            precioFinal.innerText = "$ " + total.toLocaleString('es-AR'); // Pone los puntitos de mil
+            
+            mensajeWsp += `%0A*Total Final: $${total.toLocaleString('es-AR')}*%0A%0A¿Tienen stock disponible?`;
+
+            // Actualizamos el enlace
+            botonWsp.href = `https://wa.me/${MI_TELEFONO}?text=${mensajeWsp}`;
+        }
+
+        function eliminarDelCarrito(indice) {
+            let carrito = JSON.parse(localStorage.getItem('miCarritoSienna')) || [];
+            carrito.splice(indice, 1);
+            localStorage.setItem('miCarritoSienna', JSON.stringify(carrito));
+            cargarCarrito(); // Recargamos la tabla
+            
+            // Actualizamos también el numerito rojo de la bolsa si existe en el header
+            // (Opcional, si tienes el contador en este archivo)
+        }
+
+        // Ejecutar al abrir
+        cargarCarrito();
+    </script>
+
+</body>
+</html>
